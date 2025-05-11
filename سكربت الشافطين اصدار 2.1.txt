@@ -1,0 +1,329 @@
+--[[
+    سكربت الشافطين v2.1
+    الإصدار مع عداد الأبواب
+    مع جميع الميزات السابقة + متعقب الأبواب
+--]]
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- إنشاء الواجهة
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("ImageButton")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local CloseButton = Instance.new("TextButton")
+local UIStroke = Instance.new("UIStroke")
+local TitleLabel = Instance.new("TextLabel")
+local DoorCounterLabel = Instance.new("TextLabel") -- عداد الأبواب الجديد
+
+ScreenGui.Name = "AlShaftenScript"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- زر التبديل (مزين بإيموجي 💎)
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0, 20, 0, 100)
+ToggleButton.Image = "rbxassetid://6525356216"
+ToggleButton.BackgroundTransparency = 1
+ToggleButton.Draggable = true
+ToggleButton.Active = true
+
+-- الإطار الرئيسي (تصميم حديث)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 350, 0, 380) -- زيادة الارتفاع لعرض عداد الأبواب
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UICorner.Parent = MainFrame
+UICorner.CornerRadius = UDim.new(0, 12)
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0, 255, 127)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- عنوان السكربت (مزين)
+TitleLabel.Parent = MainFrame
+TitleLabel.Text = "✨ الشافطين v2.1 | Doors ✨"
+TitleLabel.Size = UDim2.new(0, 280, 0, 40)
+TitleLabel.Position = UDim2.new(0.5, -140, 0, 10)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
+TitleLabel.Font = Enum.Font.FredokaOne
+TitleLabel.TextSize = 22
+TitleLabel.TextStrokeTransparency = 0.7
+TitleLabel.TextStrokeColor3 = Color3.fromRGB(0, 100, 100)
+
+-- عداد الأبواب الجديد
+DoorCounterLabel.Name = "DoorCounter"
+DoorCounterLabel.Parent = MainFrame
+DoorCounterLabel.Text = "انت حاليا في الباب: 0"
+DoorCounterLabel.Size = UDim2.new(0, 280, 0, 30)
+DoorCounterLabel.Position = UDim2.new(0.5, -140, 0, 50)
+DoorCounterLabel.BackgroundTransparency = 1
+DoorCounterLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+DoorCounterLabel.Font = Enum.Font.GothamBold
+DoorCounterLabel.TextSize = 16
+DoorCounterLabel.TextStrokeTransparency = 0.7
+DoorCounterLabel.TextStrokeColor3 = Color3.fromRGB(100, 100, 0)
+
+-- زر الإغلاق (مزين)
+CloseButton.Parent = MainFrame
+CloseButton.Text = "❌"
+CloseButton.Size = UDim2.new(0, 35, 0, 35)
+CloseButton.Position = UDim2.new(1, -40, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.AutoButtonColor = false
+
+-- تأثيرات زر الإغلاق
+CloseButton.MouseEnter:Connect(function()
+    CloseButton.BackgroundColor3 = Color3.fromRGB(220, 20, 20)
+end)
+CloseButton.MouseLeave:Connect(function()
+    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+end)
+
+-- وظائف التبديل والإغلاق
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- دالة إضافة زر (مزينة بإيموجيات)
+local function addToggle(name, emoji, callback, defaultState)
+    local button = Instance.new("TextButton")
+    button.Parent = MainFrame
+    button.Size = UDim2.new(0, 280, 0, 35)
+    button.Position = UDim2.new(0.5, -140, 0, (#MainFrame:GetChildren() - 5) * 40 + 90) -- تعديل الموقع ليتناسب مع العداد الجديد
+    button.Text = emoji .. " " .. name .. (defaultState and " [🟢]" or " [🔴]")
+    button.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.AutoButtonColor = false
+    
+    -- تأثيرات الأزرار
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    end)
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    end)
+    
+    local state = defaultState or false
+    button.MouseButton1Click:Connect(function()
+        state = not state
+        callback(state)
+        button.Text = emoji .. " " .. name .. (state and " [🟢]" or " [🔴]")
+    end)
+end
+
+-- ======== نظام متعقب الأبواب ========
+local function setupDoorTracker()
+    local currentDoor = 0
+    local doorParts = {}
+    
+    -- البحث عن جميع الأبواب في الماب
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "Door" and obj:IsA("Model") then
+            table.insert(doorParts, obj)
+        end
+    end
+    
+    -- تحديث العداد كل إطار
+    RunService.Heartbeat:Connect(function()
+        local char = Player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        
+        local hrp = char.HumanoidRootPart
+        local closestDoor, closestDist = nil, math.huge
+        
+        for _, door in pairs(doorParts) do
+            local doorPrimary = door.PrimaryPart or door:FindFirstChildWhichIsA("BasePart")
+            if doorPrimary then
+                local dist = (doorPrimary.Position - hrp.Position).Magnitude
+                if dist < closestDist then
+                    closestDist = dist
+                    closestDoor = door
+                end
+            end
+        end
+        
+        if closestDoor then
+            local doorNumber = tonumber(closestDoor.Name:match("%d+")) or 0
+            if doorNumber ~= currentDoor then
+                currentDoor = doorNumber
+                DoorCounterLabel.Text = "انت حاليا في الباب: " .. currentDoor
+                
+                -- إشعار عند تغيير الباب (اختياري)
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "الباب " .. currentDoor,
+                    Text = "لقد دخلت الباب " .. currentDoor,
+                    Duration = 3,
+                    Icon = "rbxassetid://6722534400"
+                })
+            end
+        end
+    end)
+end
+
+-- تهيئة متعقب الأبواب
+task.spawn(setupDoorTracker)
+
+-- ... بقية السكربت كما هو بدون تغييرات ...
+-- (جميع الأكواد السابقة تبقى كما هي من زر التحقق من الأكواد حتى النهاية)
+
+-- ======== الأكواد الصالحة المطلوبة ========
+local validCodes = {
+    ["محمد فيمبوي"] = true,
+    ["يوسف ابو راس"] = true,
+    ["عبدالاله عمكم"] = true
+}
+
+-- إضافة زر التحقق من الأكواد
+addToggle("تفعيل الكود", "🔑", function(state)
+    if state then
+        local input = game:GetService("Players").LocalPlayer:GetMouse()
+        local code = input:GetPropertyChangedSignal("Target"):Wait()
+        
+        for codeName, _ in pairs(validCodes) do
+            if code == codeName then
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "تم التفعيل بنجاح!",
+                    Text = "الكود " .. codeName .. " مفعل",
+                    Duration = 5,
+                    Icon = "rbxassetid://6722534400"
+                })
+                return
+            end
+        end
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "خطأ في الكود",
+            Text = "الكود غير صالح",
+            Duration = 5,
+            Icon = "rbxassetid://6722534400"
+        })
+    end
+end, false)
+
+-- ======== الخيارات الأساسية ========
+
+-- كاشف العناصر (مزين)
+addToggle("كاشف العناصر", "🔍", function(state)
+    local highlights = {
+        KeyObtain = Color3.fromRGB(255, 255, 0),
+        Lighter = Color3.fromRGB(255, 100, 0),
+        Flashlight = Color3.fromRGB(100, 100, 255)
+    }
+
+    local connection
+    local highlightedItems = {}
+
+    local function cleanHighlights()
+        for _, v in pairs(highlightedItems) do
+            if v and v:FindFirstChild("Highlight") then
+                v.Highlight:Destroy()
+            end
+        end
+        highlightedItems = {}
+    end
+
+    if state then
+        connection = RunService.RenderStepped:Connect(function()
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Model") and not obj:FindFirstChild("Highlight") then
+                    if highlights[obj.Name] then
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if part and (part.Position - Camera.CFrame.Position).Magnitude < 50 then
+                            local h = Instance.new("Highlight", obj)
+                            h.FillColor = highlights[obj.Name]
+                            h.OutlineColor = Color3.new(1, 1, 1)
+                            h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                            table.insert(highlightedItems, obj)
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        if connection then connection:Disconnect() end
+        cleanHighlights()
+    end
+end, false)
+
+-- إضاءة كاملة (مزينة)
+addToggle("إضاءة كاملة", "💡", function(state)
+    if state then
+        Lighting.Ambient = Color3.new(1, 1, 1)
+        Lighting.Brightness = 2
+        Lighting.GlobalShadows = false
+        Lighting.ClockTime = 12
+        Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+    else
+        Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+        Lighting.Brightness = 1
+        Lighting.GlobalShadows = true
+        Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+    end
+end, false)
+
+-- سرعة المشي (مزينة)
+addToggle("مشروب السرعة", "⚡", function(state)
+    local h = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+    if h then
+        h.WalkSpeed = state and 30 or 16
+    end
+end, false)
+
+-- إشعار التحميل (مزين)
+task.spawn(function()
+    wait(1)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "✨ الشافطين v2.1 ✨",
+        Text = "تم تحميل السكربت بنجاح!",
+        Duration = 6,
+        Icon = "rbxassetid://6722534400"
+    })
+end)
+
+-- تأثيرات إضافية
+local function createParticles()
+    local particles = Instance.new("ParticleEmitter")
+    particles.Parent = ToggleButton
+    particles.Texture = "rbxassetid://243664672"
+    particles.LightEmission = 1
+    particles.Size = NumberSequence.new(0.5)
+    particles.Transparency = NumberSequence.new(0.5)
+    particles.Speed = NumberRange.new(2)
+    particles.Lifetime = NumberRange.new(1)
+    particles.Rate = 5
+    particles.Rotation = NumberRange.new(0, 360)
+    particles.SpreadAngle = Vector2.new(360, 360)
+    particles.VelocityInheritance = 0.5
+    return particles
+end
+
+local particles = createParticles()
+ToggleButton.MouseEnter:Connect(function()
+    particles.Enabled = true
+end)
+ToggleButton.MouseLeave:Connect(function()
+    particles.Enabled = false
+end)
